@@ -1,0 +1,42 @@
+{
+  "name": "create-next-pwa-rxdb-app",
+  "version": "1.0.0",
+  "description": "A Next.js PWA starter template with RxDB for offline-first applications",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "create-next-pwa-rxdb-app": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "postinstall": "npm run build"
+  },
+  "keywords": [
+    "nextjs",
+    "pwa",
+    "rxdb",
+    "offline-first",
+    "starter",
+    "template"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "execa": "^9.6.0",
+    "fs-extra": "^11.3.0",
+    "ora": "^8.2.0",
+    "prompts": "^2.4.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^22.15.29",
+    "@types/prompts": "^2.4.9",
+    "typescript": "^5.8.3"
+  }
+}
