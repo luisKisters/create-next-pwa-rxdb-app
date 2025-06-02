@@ -30,13 +30,18 @@
     "execa": "^9.6.0",
     "fs-extra": "^11.3.0",
     "ora": "^8.2.0",
-    "prompts": "^2.4.2"
+    "prompts": "^2.4.2",
+    "rxdb": "^15.24.0",
+    "rxjs": "^7.8.1",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^22.15.29",
     "@types/prompts": "^2.4.9",
+    "@types/uuid": "^9.0.8",
+    "tailwindcss": "^3.4.3",
     "typescript": "^5.8.3"
   }
 }

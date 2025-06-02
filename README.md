@@ -67,3 +67,7 @@ The CLI prompts for:
 - **Prompts**: Interactive CLI prompts
 - **Execa**: Process execution
 - **fs-extra**: Enhanced file system operations
+
+# TODO
+
+- [ ] Basic [Winsurf](https://winsurf.dev/) & [Cursor](https://www.cursor.com/) config

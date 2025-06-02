@@ -172,14 +172,7 @@ async function createProject(config: ProjectConfig) {
   const depsSpinner = ora("Installing additional dependencies...").start();
 
   try {
-    const dependencies = [
-      "rxdb",
-      "rxjs",
-      "@rxdb/replication-websocket",
-      "@rxdb/storage-dexie",
-      "@serwist/next",
-      "serwist",
-    ];
+    const dependencies = ["rxdb", "rxjs", "@serwist/next", "serwist"];
 
     if (config.useMotion) {
       dependencies.push("framer-motion");
