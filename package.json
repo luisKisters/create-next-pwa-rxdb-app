@@ -22,11 +22,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.9",
+    "@types/react": "^19.1.6",
     "chalk": "^5.4.1",
     "execa": "^9.6.0",
     "fs-extra": "^11.3.0",
     "ora": "^8.2.0",
     "prompts": "^2.4.2",
+    "react": "^19.1.0",
     "rxdb": "^16.13.0",
     "rxjs": "^7.8.2"
   },
