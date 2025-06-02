@@ -7,7 +7,7 @@ import { AppCollections } from "../lib/database/types";
 
 export type QueryOptions = {
   selector?: any;
-  sort?: any; // RxDB sort format - flexible to match RxDB API
+  sort?: Record<string, "asc" | "desc"> | Record<string, "asc" | "desc">[]; // RxDB sort format
   limit?: number;
   skip?: number;
 };
@@ -43,22 +43,36 @@ export function useRxQuery<K extends keyof AppCollections>(
     const startQuery = async () => {
       try {
         // Build query following RxDB Supabase example pattern
-        let query = collection.find(options.selector || {});
+        // Include sort in the find options object
+        const findOptions: any = {
+          selector: options.selector || {},
+        };
 
-        // Add sorting
-        if (options.sort && options.sort.length > 0) {
-          query = query.sort(options.sort);
+        // Add sorting to find options
+        if (options.sort) {
+          if (Array.isArray(options.sort)) {
+            findOptions.sort = options.sort;
+          } else {
+            // Convert single sort object to array format
+            findOptions.sort = Object.entries(options.sort).map(
+              ([field, direction]) => ({
+                [field]: direction,
+              })
+            );
+          }
         }
 
         // Add limit
         if (options.limit) {
-          query = query.limit(options.limit);
+          findOptions.limit = options.limit;
         }
 
         // Add skip
         if (options.skip) {
-          query = query.skip(options.skip);
+          findOptions.skip = options.skip;
         }
+
+        let query = collection.find(findOptions);
 
         // Subscribe to reactive query (following the example pattern)
         subscription = query.$.subscribe({

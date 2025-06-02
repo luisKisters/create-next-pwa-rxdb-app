@@ -8,7 +8,7 @@ import {
 } from "rxdb";
 import { Subject } from "rxjs";
 import { replicateRxCollection } from "rxdb/plugins/replication";
-import { supabase } from "../../supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import { AppCollections, CheckpointType } from "../types";
 import { TodoDocumentType } from "../schemas/todos";
 

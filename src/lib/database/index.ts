@@ -11,12 +11,18 @@ import { RxDBDevModePlugin } from "rxdb/plugins/dev-mode";
 import { getRxStorageDexie } from "rxdb/plugins/storage-dexie";
 import { wrappedValidateAjvStorage } from "rxdb/plugins/validate-ajv";
 import { RxDBLeaderElectionPlugin } from "rxdb/plugins/leader-election";
+import { RxDBQueryBuilderPlugin } from "rxdb/plugins/query-builder";
 import { todoSchema, TodoDocumentType } from "./schemas/todos";
 import { AppCollections } from "./types";
+import { RxDBMigrationSchemaPlugin } from "rxdb/plugins/migration-schema";
+import { RxDBUpdatePlugin } from "rxdb/plugins/update";
 
 // Add plugins
 addRxPlugin(RxDBDevModePlugin);
 addRxPlugin(RxDBLeaderElectionPlugin);
+addRxPlugin(RxDBQueryBuilderPlugin);
+addRxPlugin(RxDBMigrationSchemaPlugin);
+addRxPlugin(RxDBUpdatePlugin);
 
 let dbPromise: Promise<RxDatabase<AppCollections>> | null = null;
 
@@ -52,6 +58,13 @@ async function createDatabase(): Promise<RxDatabase<AppCollections>> {
       schema: todoSchema,
       methods: {},
       statics: {},
+      migrationStrategies: {
+        // Migration from version 0 to 1 (removed date-time format)
+        // No data transformation needed since we only removed format validation
+        1: function (oldDoc: any) {
+          return oldDoc;
+        },
+      },
     };
   }
 
@@ -60,6 +73,23 @@ async function createDatabase(): Promise<RxDatabase<AppCollections>> {
   // Setup replication revision hooks for all collections
   if (CONFIG.includeTodoExample && database.todos) {
     setupReplicationRevisionHooks(database.todos, database);
+  }
+
+  // Start Supabase replication if enabled
+  if (
+    CONFIG.enableSupabaseSync &&
+    CONFIG.includeTodoExample &&
+    database.todos
+  ) {
+    try {
+      const { startTodoReplication } = await import(
+        "./sync/supabase-replication"
+      );
+      await startTodoReplication(database);
+      console.log("Supabase replication started");
+    } catch (error) {
+      console.warn("Failed to start Supabase replication:", error);
+    }
   }
 
   console.log("RxDB database created successfully");
@@ -76,23 +106,45 @@ export function setupReplicationRevisionHooks(
 ) {
   // Pre-insert hook to set initial replicationRevision
   collection.preInsert((docData: any) => {
-    docData.replicationRevision = createRevision(database.token, docData);
+    // Only set replicationRevision if it's not already properly formatted
+    if (!docData.replicationRevision || docData.replicationRevision === "") {
+      // Create initial revision with height 1
+      docData.replicationRevision =
+        "1-" + database.hashFunction(JSON.stringify(docData));
+    }
     return docData;
   }, false);
 
   // Pre-save hook to increment replicationRevision on updates
   collection.preSave((docData: any) => {
-    const oldRevHeight = parseRevision(docData.replicationRevision).height;
-    docData.replicationRevision =
-      oldRevHeight + 1 + "-" + database.hashFunction(JSON.stringify(docData));
+    try {
+      const oldRevHeight = parseRevision(docData.replicationRevision).height;
+      docData.replicationRevision =
+        oldRevHeight + 1 + "-" + database.hashFunction(JSON.stringify(docData));
+    } catch (error) {
+      // If parsing fails, start with height 1
+      console.warn("Failed to parse revision, starting fresh:", error);
+      docData.replicationRevision =
+        "1-" + database.hashFunction(JSON.stringify(docData));
+    }
     return docData;
   }, false);
 
   // Pre-remove hook to increment replicationRevision on deletes
   collection.preRemove((docData: any) => {
-    const oldRevHeight = parseRevision(docData.replicationRevision).height;
-    docData.replicationRevision =
-      oldRevHeight + 1 + "-" + database.hashFunction(JSON.stringify(docData));
+    try {
+      const oldRevHeight = parseRevision(docData.replicationRevision).height;
+      docData.replicationRevision =
+        oldRevHeight + 1 + "-" + database.hashFunction(JSON.stringify(docData));
+    } catch (error) {
+      // If parsing fails, start with height 1
+      console.warn(
+        "Failed to parse revision on remove, starting fresh:",
+        error
+      );
+      docData.replicationRevision =
+        "1-" + database.hashFunction(JSON.stringify(docData));
+    }
     return docData;
   }, false);
 }

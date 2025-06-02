@@ -11,7 +11,7 @@ export type TodoDocumentType = {
 
 export const todoSchema: RxJsonSchema<TodoDocumentType> = {
   title: "todo schema",
-  version: 0,
+  version: 1,
   description: "describes a todo item",
   primaryKey: "id",
   type: "object",
@@ -30,14 +30,15 @@ export const todoSchema: RxJsonSchema<TodoDocumentType> = {
     },
     createdAt: {
       type: "string",
-      format: "date-time",
+      maxLength: 30, // ISO date string length
     },
     updatedAt: {
       type: "string",
-      format: "date-time",
+      maxLength: 30, // ISO date string length
     },
     replicationRevision: {
       type: "string",
+      maxLength: 200, // RxDB revision string
     },
   },
   required: [

@@ -21,7 +21,7 @@ export const useTodos = () => {
         completed: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        replicationRevision: "1", // Will be auto-updated by pre-hooks
+        replicationRevision: "", // Will be set by pre-insert hook
       };
 
       await db.todos.insert(newTodo);
